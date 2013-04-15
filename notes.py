@@ -1,12 +1,11 @@
 from flask import Flask, jsonify, json, request, Response
-
+import os
 app = Flask(__name__)
-
 
 allnotes = []
 index = 0
 
-@app.route('/notes', methods=['GET', 'POST'])
+@app.route('/notes', methods=['GET', 'POST', 'OPTIONS'])
 def notes():
   if request.method == 'GET':
     return get_all_notes()
@@ -19,6 +18,21 @@ def notes_id(id):
     return get_note(id)
   elif request.method == 'PUT':
     return update_note(id, json.loads(request.data))
+
+@app.route('/web/<filename>')
+def get_files(filename):
+  file = 'web/' + filename.encode('utf8')
+  fin = open(file, "rb")
+  size = os.path.getsize(file)
+  headers = [
+    ('Content-Type','application/zip'),
+    ('Content-Length', str(size)),
+    ('Content-Disposition', 'attachment;filename=' + file)
+  ]
+  status = 'FileDownload'
+
+  return (status, headers, fin)
+
 
 def get_all_notes():
   global allnotes
@@ -44,3 +58,5 @@ def get_note(id):
 if __name__ == '__main__':
   app.debug = True
   app.run()
+
+
